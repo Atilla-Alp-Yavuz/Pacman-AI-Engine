@@ -306,6 +306,7 @@ class TD3Agent:
 
 
     def save_model(self, file_path):
+
         torch.save({
             'actor_state_dict': self.actor.state_dict(),
             'target_actor_state_dict': self.target_actor.state_dict(),
@@ -319,6 +320,7 @@ class TD3Agent:
         }, file_path)
 
     def load_model(self, file_path):
+
         checkpoint = torch.load(file_path)
         self.actor.load_state_dict(checkpoint['actor_state_dict'])
         self.target_actor.load_state_dict(checkpoint['target_actor_state_dict'])
@@ -330,13 +332,18 @@ class TD3Agent:
         self.optimizer_critic_1.load_state_dict(checkpoint['optimizer_critic_1_state_dict'])
         self.optimizer_critic_2.load_state_dict(checkpoint['optimizer_critic_2_state_dict'])
 
+
+
 def preprocess_observation(observation, new_shape=(84, 84)):
+
     observation = cv2.cvtColor(observation, cv2.COLOR_RGB2GRAY)
     observation = cv2.resize(observation, new_shape, interpolation=cv2.INTER_AREA)
     return np.array(observation, dtype=np.float32) / 255.0
 
 class TestTraining:
+
     def __init__(self, env_name, episodes=1000, batch_size=128, target_update=10, hidden_dimension=512, gamma=0.98, lr=0.001, device='cuda' if torch.cuda.is_available() else 'cpu',  convergence_window=100, convergence_threshold=0.01):
+
         self.env_name = env_name
         self.episodes = episodes
         self.batch_size = batch_size
@@ -381,15 +388,20 @@ class TestTraining:
 
     def run(self):
         sum_reward = 0
+        
         for episode in range(self.episodes):
             observation = preprocess_observation(self.env.reset()[0])
             state = np.expand_dims(observation, axis=0)
             state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
             total_reward = 0
             done = False
+            
             while not done:
                 action = self.agent.act(state)
                 next_observation, reward, done, _, _ = self.env.step(action)
+
+                if(reward < 0){ reward*2 }
+
                 next_state = preprocess_observation(next_observation)
                 next_state = np.expand_dims(next_state, axis=0)
                 next_state = torch.tensor(next_state, dtype=torch.float32).unsqueeze(0).to(self.device)
@@ -401,6 +413,7 @@ class TestTraining:
                     self.agent.replay(self.batch_size)
 
             sum_reward += total_reward
+            
             self.rewards.append(total_reward)
             avg = sum_reward / (episode + 1)
             self.rewards_per_episode.append(avg)
@@ -416,17 +429,21 @@ class TestTraining:
                 avg_reward = np.mean(self.rewards[-500:])
                 print(f"Episode {episode + 1}/{self.episodes} - Reward: {total_reward:.2f} - Average Reward (last 500 episodes): {avg_reward:.2f} - Reward Trend: {trend:.2f}")
 
+            if (episode + 1) % 500 == 0:
+                self.plot_rewards((episode + 1) / 500 , self.rewards[-500:] , self.rewards_per_episode[-500:])
+                print("Graph saved")
+
         self.env.close()
 
-    def plot_rewards(self):
+    def plot_rewards(self, i , arr1 , arr2):
 
         fig = go.Figure()
         tig = go.Figure()
-        sag = go.Fİgure()
+        sag = go.Figure()
 
         fig.add_trace(go.Scatter(
-            x=np.arange(1, len(self.rewards) + 1),
-            y=self.rewards,
+            x=np.arange(1, len(arr1) + 1),
+            y=arr1,
             mode='lines',
             name='Rewards'
         ))
@@ -441,11 +458,11 @@ class TestTraining:
             font=dict(color='black')
         )
 
-        fig.write_image("rewardsplot2.png")
+        fig.write_image(f"rewardsplotp{i}.png")
 
         tig.add_trace(go.Scatter(
-            x=np.arange(1, len(self.rewards_per_episode) + 1),
-            y=self.rewards_per_episode,
+            x=np.arange(1, len(arr2) + 1),
+            y=arr2,
             mode='lines',
             name='rewards_per_episode'
         ))
@@ -460,10 +477,10 @@ class TestTraining:
             font=dict(color='black')
         )
 
-        tig.write_image("rewardperepisodeplot2.png")
+        tig.write_image(f"rewardperepisodeplot2p{i}.png")
 
         window_size = 100
-        sliding_avg = self.calculate_sliding_average(self.rewards, window_size)
+        sliding_avg = self.calculate_sliding_average(arr1, window_size)
 
         sag.add_trace(go.Scatter(
             x=np.arange(1, len(sliding_avg) + 1),
@@ -482,8 +499,9 @@ class TestTraining:
             font=dict(color='black')
         )
 
-        sag.write_image("sliding_average_rewardsplot2.png")
+        sag.write_image(f"sliding_average_rewardsplot2{i}.png")
 
+        
     def save(self, model_name):
         self.agent.save_model(model_name)
 
@@ -522,7 +540,6 @@ if __name__ == "__main__":
         print("No saved model found. Starting training from scratch.")
     
     pacman.run()
-    pacman.plot_rewards()
     print(f"Model saved to {model_path}...")
     pacman.save(model_path)
 
