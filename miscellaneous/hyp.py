@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import os
 from itertools import product
 
+#THIS CODE IS FOR HYPERPARAMETER TUNING OF THE SYSTEM
+#STRICTLY FOR THIS
+
 class QNetwork(nn.Module):
     def __init__(self, input_shape, num_actions):
         super(QNetwork, self).__init__()
