@@ -12,6 +12,9 @@ from skopt.space import Real, Integer
 from skopt.utils import use_named_args
 from sklearn.linear_model import LinearRegression 
 
+#THIS FILE IS STRICTLY FOR THE HYPERPARAMTER TUNING OF DOUBLE DEEP Q NETWORK SYSTEM
+#DDQNA
+
 class DQN(nn.Module):
     def __init__(self, in_channels, num_actions, h_dimension):
         super(DQN, self).__init__()
