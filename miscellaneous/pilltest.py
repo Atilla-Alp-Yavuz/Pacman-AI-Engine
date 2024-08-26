@@ -13,6 +13,8 @@ previous_reward = 0
 
 ind = True
 
+#TESTING SOME HARDCODED ACTIONS FOR PILL AND GHOST EATING
+
 """
 def randomshi(total_reward , imp):
 
