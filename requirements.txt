@@ -19,6 +19,8 @@ distributed==2024.5.0
 gym==0.26.2
 gymnasium==0.29.1
 heapdict==1.0.1
+imageio==2.35.1
+imageio-ffmpeg==0.5.1
 importlib==1.0.4
 importlib-metadata==8.0.0
 importlib-resources==6.4.0
