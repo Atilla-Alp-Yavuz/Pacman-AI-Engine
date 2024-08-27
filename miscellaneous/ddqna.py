@@ -92,14 +92,12 @@ class TD3Agent:
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
     def act(self, state):
-        # Get action values from the actor network
+
         action_values = self.actor(state)[0].detach().cpu().numpy()
-        
-        # Add noise for exploration
+
         noise = np.random.normal(0, self.policy_noise, size=action_values.shape)
         action_values = np.clip(action_values + noise, -self.noise_clip, self.noise_clip)
-        
-        # Select the action with the highest value (discrete action)
+
         action = np.argmax(action_values)
         
         return action
@@ -113,7 +111,7 @@ class TD3Agent:
 
         self.total_it += 1
 
-        # Sample a random minibatch of transitions
+
         minibatch = random.sample(self.memory, batch_size)
         state, action, reward, next_state, done = zip(*minibatch)
 
@@ -123,10 +121,9 @@ class TD3Agent:
         next_state = torch.cat(next_state).to(self.device)
         done = torch.tensor(done).float().to(self.device).unsqueeze(1)
 
-        # Compute the target Q value
         next_action = self.target_actor(next_state)[0]
         
-        # Generate noise with the same shape as next_action
+
         noise = torch.normal(0, self.policy_noise, size=next_action.shape).clamp(-self.noise_clip, self.noise_clip).to(self.device)
         next_action = (next_action + noise).clamp(-1, 1)
 
@@ -135,7 +132,7 @@ class TD3Agent:
         target_q = torch.min(target_q1, target_q2).squeeze()
         target_q = reward + (1 - done) * self.gamma * target_q
 
-        # Update critics
+
         current_q1 = self.critic_1(state).gather(1, action.long())
         current_q2 = self.critic_2(state).gather(1, action.long())
 
@@ -150,7 +147,7 @@ class TD3Agent:
         loss_q2.backward()  # No need to retain after the second backward pass
         self.optimizer_critic_2.step()
 
-        # Delayed policy updates
+
         if self.total_it % self.policy_freq == 0:
             actor_loss = -self.critic_1(state).gather(1, self.actor(state).max(1)[1].unsqueeze(1)).mean()
 
